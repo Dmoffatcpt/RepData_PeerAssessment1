@@ -7,19 +7,87 @@ output:
 
 
 ## Loading and preprocessing the data
-
+```{r}
+library(knitr)
+library(dplyr)
+library(ggplot2)
+unzip("activity.zip",exdir=".",overwrite=TRUE)
+rawdata <- read.csv("activity.csv")
+rawdata$date <- as.Date(rawdata$date)
+procdata <- na.omit(rawdata)
+#Total steps per day
+totalsteps <- aggregate(procdata$steps,by=list(procdata$date),FUN=sum)
+```
 
 
 ## What is mean total number of steps taken per day?
-
+```{r}
+#Histogram
+par(mfrow=c(1,1))
+Plot1 <- hist(totalsteps$x,breaks=10,main="Histogram of Total Steps taken per day. NA values removed",xlab="Total Steps Taken")
+#Mean/Median
+summary(totalsteps$x)
+```
 
 
 ## What is the average daily activity pattern?
+```{r}
+timesteps <- aggregate(procdata$steps,by=list(procdata$interval),FUN=mean)
+Plot2 <- plot(timesteps$Group.1,timesteps$x,type="l",xlab="Interval",ylab="Mean steps per day",main="Average Steps per time interval across all days")
+#Max step time average
+highstep <- which.max(timesteps[,2])
+```
 
+```{r}
+hightime <- timesteps[highstep,1]
+hightime
+```
 
+```{r}
+highstepmag <- timesteps[highstep,2]
+highstepmag
+```
 
 ## Imputing missing values
+```{r}
+#Calculate NA's in rawdata
+noNA <- sum(is.na(rawdata))
 
+#Strategy for filling in missing values - use mean for day or mean for time-slot?
+#Timestamps contains missing values per time-slot.
 
+#Create new data set with replaced missing values
+
+#newdata <- ifelse(is.na(rawdata$steps),timesteps$x,rawdata$steps)
+newdatasteps <- ifelse(is.na(rawdata$steps),timesteps$x,rawdata$steps)
+newdata <- rawdata
+newdata[,1] <- newdatasteps
+
+#New histogram using newdata
+newtimesteps <- aggregate(newdata$steps,by=list(newdata$date),FUN=sum)
+Plot3 <- hist(newtimesteps$x,breaks=10,xlab="Total Steps Taken",main="Histogram of Total Steps per Day - no missing data")
+
+summary(newtimesteps$x)
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r}
+#Difference in pattern between weekdays and weekends. Use weekdays() function
+#Uses newdata set which replaces all "NA" values. Split into Weekday/Weekend
+
+newdata2 <- newdata
+newdata2$days <- weekdays(newdata$date)
+newdata2$days <- ifelse(newdata2$days=="Saturday" | newdata2$days=="Sunday","Weekend","Weekday")
+
+#Split into weekday and weekend data sets
+weekday <- subset(newdata2,newdata2$days=="Weekday")
+weekend <- subset(newdata2,newdata2$days=="Weekend")
+
+par(mfrow=c(2,1))
+#Produce data for graph
+weekdaytimesteps <- aggregate(weekday$steps,by=list(weekday$interval),FUN=mean)
+Plot4 <- plot(weekdaytimesteps$Group.1,weekdaytimesteps$x,type="l",xlab="Interval",ylab="Number of Steps",main="Weekday")
+
+weekendtimesteps <- aggregate(weekend$steps,by=list(weekend$interval),FUN=mean)
+Plot5 <- plot(weekendtimesteps$Group.1,weekendtimesteps$x,type="l",xlab="Interval",ylab="Number of Steps",main="Weekend")
+```
