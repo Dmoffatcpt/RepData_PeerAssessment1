@@ -7,6 +7,7 @@ output:
 
 
 ## Loading and preprocessing the data
+The following section reads in the data, sets the date format and removes the 'NA' values, creating a reduced data frame "procdata".
 ```{r}
 library(knitr)
 library(dplyr)
@@ -21,6 +22,7 @@ totalsteps <- aggregate(procdata$steps,by=list(procdata$date),FUN=sum)
 
 
 ## What is mean total number of steps taken per day?
+The summary information, including the total number of steps per day is as follows:
 ```{r}
 #Histogram
 par(mfrow=c(1,1))
@@ -37,18 +39,19 @@ Plot2 <- plot(timesteps$Group.1,timesteps$x,type="l",xlab="Interval",ylab="Mean 
 #Max step time average
 highstep <- which.max(timesteps[,2])
 ```
-
+The time interval at which the highest number of average steps occurs at is:
 ```{r}
 hightime <- timesteps[highstep,1]
 hightime
 ```
-
+The magnitude of the average steps at this time interval is:
 ```{r}
 highstepmag <- timesteps[highstep,2]
 highstepmag
 ```
 
 ## Imputing missing values
+A new data set is created from the original raw data which replaces all NA values with the mean values for that particular time interval. The summary statistics are also presented.
 ```{r}
 #Calculate NA's in rawdata
 noNA <- sum(is.na(rawdata))
@@ -71,6 +74,7 @@ summary(newtimesteps$x)
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+The following graphs show the differences between the average number of steps per time interval depedning upon if a weekday or weekend.
 ```{r}
 #Difference in pattern between weekdays and weekends. Use weekdays() function
 #Uses newdata set which replaces all "NA" values. Split into Weekday/Weekend
